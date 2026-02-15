@@ -564,6 +564,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         self._double_threshold = 1.5
         # Reminder runtime cache/state.
         self._timings_cache = {"ts": 0.0, "payload": None}
+        self._hijri_cache = {}
         self._notified_keys = set()
         self._notified_day = None
         self._qibla_lock = threading.Lock()
@@ -806,6 +807,27 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             timeout=timeout
         )
 
+    def _get_cached_hijri_for_date(self, target_date, cache_seconds=21600, timeout=3):
+        try:
+            key = target_date.strftime("%Y-%m-%d")
+            now_ts = time.time()
+            cache = getattr(self, "_hijri_cache", {})
+            entry = cache.get(key)
+            if entry and (now_ts - float(entry.get("ts", 0.0)) < cache_seconds):
+                return entry.get("hijri")
+
+            resp = self._fetch_timings(
+                date_str=target_date.strftime("%d-%m-%Y"),
+                timeout=timeout
+            )
+            hijri = resp.json().get("data", {}).get("date", {}).get("hijri")
+            if hijri:
+                cache[key] = {"ts": now_ts, "hijri": hijri}
+                self._hijri_cache = cache
+            return hijri
+        except Exception:
+            return None
+
     def _copy_to_clipboard(self, text):
         try:
             if not text:
@@ -828,7 +850,20 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             except Exception:
                 return False
 
+    def _post_ui_message(self, message):
+        try:
+            wx.CallAfter(ui.message, message)
+        except Exception:
+            ui.message(message)
+
     def _handle_message(self, key, message):
+        try:
+            if not wx.IsMainThread():
+                wx.CallAfter(self._handle_message, key, message)
+                return
+        except Exception:
+            pass
+
         now = time.time()
         last = self._last_invoke.get(key)
         if last and (now - last.get("ts", 0) <= self._double_threshold):
@@ -906,46 +941,45 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         threading.Thread(target=self._compute_qibla_async, daemon=True).start()
 
     def announce_time(self, api_key, name_en, name_id):
-        try:
-            response = self._fetch_timings(timeout=10)
-            resp = response.json().get("data", {})
-            data = resp.get("timings", {})
-            now_loc = self._get_location_now(resp)
-            time_str = data.get(api_key)
-            if api_key in FIXED_PRAYER_OFFSETS:
-                adjusted = self._get_adjusted_prayer_datetime(data, api_key, now_loc)
-                if adjusted:
-                    time_str = adjusted.strftime("%H:%M")
-            # Some APIs don't provide 'Dhuha' directly. Compute it from Sunrise if needed.
-            if not time_str and api_key == "Dhuha":
-                try:
-                    sunrise = data.get("Sunrise")
-                    dhuhr = data.get("Dhuhr")
-                    if sunrise:
-                        s = sunrise.split()[0]
-                        h, m = [int(x) for x in s.split(":")]
-                        now = datetime.datetime.now()
-                        sunrise_dt = datetime.datetime(now.year, now.month, now.day, h, m)
-                        # Default Dhuha: 60 minutes after sunrise
-                        dhuha_dt = sunrise_dt + datetime.timedelta(minutes=60)
-                        time_str = dhuha_dt.strftime("%H:%M")
-                except Exception:
-                    time_str = None
-            if not time_str:
-                return
-
-            lang = config.conf["muslimku"].get("language", "en")
-            if lang == "id":
-                message = f"Waktu {name_id} hari ini adalah pukul {time_str}."
-            else:
-                message = f"{name_en} time today: {time_str}."
-
+        def worker():
             try:
-                self._handle_message(f"time:{api_key}", message)
+                payload = self._get_cached_timings_payload()
+                if not payload:
+                    self._post_ui_message("Failed to retrieve prayer time.")
+                    return
+
+                data = payload.get("timings", {})
+                now_loc = self._get_location_now(payload)
+                time_str = data.get(api_key)
+                if api_key in FIXED_PRAYER_OFFSETS:
+                    adjusted = self._get_adjusted_prayer_datetime(data, api_key, now_loc)
+                    if adjusted:
+                        time_str = adjusted.strftime("%H:%M")
+                # Some APIs don't provide 'Dhuha' directly. Compute it from Sunrise if needed.
+                if not time_str and api_key == "Dhuha":
+                    try:
+                        sunrise = data.get("Sunrise")
+                        if sunrise:
+                            sunrise_dt = self._parse_api_time_to_datetime(sunrise, now_loc)
+                            if sunrise_dt:
+                                # Default Dhuha: 60 minutes after sunrise
+                                dhuha_dt = sunrise_dt + datetime.timedelta(minutes=60)
+                                time_str = dhuha_dt.strftime("%H:%M")
+                    except Exception:
+                        time_str = None
+                if not time_str:
+                    return
+
+                lang = config.conf["muslimku"].get("language", "en")
+                if lang == "id":
+                    message = f"Waktu {name_id} hari ini adalah pukul {time_str}."
+                else:
+                    message = f"{name_en} time today: {time_str}."
+                wx.CallAfter(self._handle_message, f"time:{api_key}", message)
             except Exception:
-                ui.message(message)
-        except Exception:
-            ui.message("Failed to retrieve prayer time.")
+                self._post_ui_message("Failed to retrieve prayer time.")
+
+        threading.Thread(target=worker, daemon=True).start()
 
     @scriptHandler.script(description=GESTURE_DESC["imsak"], gesture="kb:NVDA+control+shift+6", category=UI_GESTURE_CATEGORY)
     def script_imsak(self, gesture):
@@ -968,10 +1002,14 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
     @scriptHandler.script(description=GESTURE_DESC["hari"], gesture="kb:NVDA+control+shift+h", category=UI_GESTURE_CATEGORY)
     def script_hari(self, gesture):
-        try:
-            response = self._fetch_timings(timeout=10)
+        threading.Thread(target=self._announce_day_info_worker, daemon=True).start()
 
-            resp_data = response.json().get("data", {})
+    def _announce_day_info_worker(self):
+        try:
+            resp_data = self._get_cached_timings_payload()
+            if not resp_data:
+                self._post_ui_message("Failed to retrieve calendar data.")
+                return
             timings = resp_data.get("timings", {})
             date_info = resp_data.get("date", {})
             hijri = date_info.get("hijri", {})
@@ -993,11 +1031,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
                         # try to fetch tomorrow's hijri date
                         try:
                             tomorrow = now_loc + datetime.timedelta(days=1)
-                            resp2 = self._fetch_timings(
-                                date_str=tomorrow.strftime("%d-%m-%Y"),
-                                timeout=10
-                            )
-                            hijri2 = resp2.json().get("data", {}).get("date", {}).get("hijri")
+                            hijri2 = self._get_cached_hijri_for_date(tomorrow, timeout=3)
                             if hijri2:
                                 hijri_day = hijri2.get("day")
                                 hijri_year = hijri2.get("year")
@@ -1114,105 +1148,104 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
                         f"{greg_day} {greg_month} {greg_year} AD."
                     )
 
-            try:
-                self._handle_message("hari", message)
-            except Exception:
-                ui.message(message)
-
+            wx.CallAfter(self._handle_message, "hari", message)
         except Exception:
-            ui.message("Failed to retrieve calendar data.")
+            self._post_ui_message("Failed to retrieve calendar data.")
 
     def announce_prayer(self, prayer):
-        try:
-            response = self._fetch_timings(timeout=10)
-            resp = response.json().get("data", {})
-            data = resp.get("timings", {})
-            now_loc = self._get_location_now(resp)
-            target = self._get_adjusted_prayer_datetime(data, prayer, now_loc)
-            if not target:
-                return
-            time = target.strftime("%H:%M")
-
-            lang = config.conf["muslimku"]["language"]
-
-            if lang == "id":
-                nama = {
-                    "Fajr": "Subuh",
-                    "Dhuhr": "Dzuhur",
-                    "Asr": "Ashar",
-                    "Maghrib": "Maghrib",
-                    "Isha": "Isya"
-                }.get(prayer, prayer)
-
-                message = f"Waktu {nama} hari ini: pukul {time}."
-            else:
-                message = f"{prayer} time today: {time}."
-
+        def worker():
             try:
-                self._handle_message(f"prayer:{prayer}", message)
-            except Exception:
-                ui.message(message)
+                payload = self._get_cached_timings_payload()
+                if not payload:
+                    self._post_ui_message("Failed to retrieve prayer time.")
+                    return
+                data = payload.get("timings", {})
+                now_loc = self._get_location_now(payload)
+                target = self._get_adjusted_prayer_datetime(data, prayer, now_loc)
+                if not target:
+                    return
+                time_str = target.strftime("%H:%M")
 
-        except Exception:
-            ui.message("Failed to retrieve prayer time.")
+                lang = config.conf["muslimku"]["language"]
+
+                if lang == "id":
+                    nama = {
+                        "Fajr": "Subuh",
+                        "Dhuhr": "Dzuhur",
+                        "Asr": "Ashar",
+                        "Maghrib": "Maghrib",
+                        "Isha": "Isya"
+                    }.get(prayer, prayer)
+
+                    message = f"Waktu {nama} hari ini: pukul {time_str}."
+                else:
+                    message = f"{prayer} time today: {time_str}."
+
+                wx.CallAfter(self._handle_message, f"prayer:{prayer}", message)
+            except Exception:
+                self._post_ui_message("Failed to retrieve prayer time.")
+
+        threading.Thread(target=worker, daemon=True).start()
 
     def announce_next_prayer(self):
-        try:
-            response = self._fetch_timings(timeout=10)
-            resp = response.json().get("data", {})
-            data = resp.get("timings", {})
-            now = self._get_location_now(resp)
-
-            prayers = [
-                ("Fajr", "Subuh", "Fajr"),
-                ("Dhuhr", "Dzuhur", "Dhuhr"),
-                ("Asr", "Ashar", "Asr"),
-                ("Maghrib", "Maghrib", "Maghrib"),
-                ("Isha", "Isya", "Isha")
-            ]
-
-            next_prayer = None
-            next_time = None
-            for api_key, id_name, en_name in prayers:
-                candidate = self._get_adjusted_prayer_datetime(data, api_key, now)
-                if not candidate:
-                    continue
-                if candidate > now:
-                    next_prayer = (api_key, id_name, en_name)
-                    next_time = candidate
-                    break
-
-            # If all daily prayers have passed, next is tomorrow's Fajr.
-            if not next_prayer:
-                fajr = self._get_adjusted_prayer_datetime(data, "Fajr", now)
-                if not fajr:
-                    return
-                next_prayer = ("Fajr", "Subuh", "Fajr")
-                next_time = fajr + datetime.timedelta(days=1)
-
-            remaining = next_time - now
-            total_minutes = int(max(0, remaining.total_seconds()) // 60)
-            hours = total_minutes // 60
-            minutes = total_minutes % 60
-
-            lang = config.conf["muslimku"].get("language", "en")
-            if lang == "id":
-                message = (
-                    f"Menuju waktu solat berikutnya adalah Solat {next_prayer[1]}: "
-                    f"Dalam {hours} jam, dan {minutes} menit lagi."
-                )
-            else:
-                message = (
-                    f"Next prayer is {next_prayer[2]}: "
-                    f"In {hours} hours and {minutes} minutes."
-                )
-
+        def worker():
             try:
-                self._handle_message("next_prayer", message)
+                payload = self._get_cached_timings_payload()
+                if not payload:
+                    self._post_ui_message("Failed to retrieve prayer time.")
+                    return
+                data = payload.get("timings", {})
+                now = self._get_location_now(payload)
+
+                prayers = [
+                    ("Fajr", "Subuh", "Fajr"),
+                    ("Dhuhr", "Dzuhur", "Dhuhr"),
+                    ("Asr", "Ashar", "Asr"),
+                    ("Maghrib", "Maghrib", "Maghrib"),
+                    ("Isha", "Isya", "Isha")
+                ]
+
+                next_prayer = None
+                next_time = None
+                for api_key, id_name, en_name in prayers:
+                    candidate = self._get_adjusted_prayer_datetime(data, api_key, now)
+                    if not candidate:
+                        continue
+                    if candidate > now:
+                        next_prayer = (api_key, id_name, en_name)
+                        next_time = candidate
+                        break
+
+                # If all daily prayers have passed, next is tomorrow's Fajr.
+                if not next_prayer:
+                    fajr = self._get_adjusted_prayer_datetime(data, "Fajr", now)
+                    if not fajr:
+                        return
+                    next_prayer = ("Fajr", "Subuh", "Fajr")
+                    next_time = fajr + datetime.timedelta(days=1)
+
+                remaining = next_time - now
+                total_minutes = int(max(0, remaining.total_seconds()) // 60)
+                hours = total_minutes // 60
+                minutes = total_minutes % 60
+
+                lang = config.conf["muslimku"].get("language", "en")
+                if lang == "id":
+                    message = (
+                        f"Menuju waktu solat berikutnya adalah Solat {next_prayer[1]}: "
+                        f"Dalam {hours} jam, dan {minutes} menit lagi."
+                    )
+                else:
+                    message = (
+                        f"Next prayer is {next_prayer[2]}: "
+                        f"In {hours} hours and {minutes} minutes."
+                    )
+
+                wx.CallAfter(self._handle_message, "next_prayer", message)
             except Exception:
-                ui.message(message)
-        except Exception:
-            ui.message("Failed to retrieve prayer time.")
+                self._post_ui_message("Failed to retrieve prayer time.")
+
+        threading.Thread(target=worker, daemon=True).start()
 
     def announce_location(self):
         try:
