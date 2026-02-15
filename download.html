@@ -1,0 +1,191 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Download Muslimku</title>
+  <style>
+    :root {
+      --bg: #f8f4e8;
+      --card: #fffdf7;
+      --text: #16352d;
+      --muted: #5a6f66;
+      --accent: #0f6a52;
+      --accent-2: #b58a2b;
+      --line: #e5dbc0;
+      --shadow: 0 10px 30px rgba(44, 58, 47, 0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans", "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(181, 138, 43, 0.16) 0%, rgba(181, 138, 43, 0) 45%),
+        radial-gradient(circle at 80% 0%, rgba(15, 106, 82, 0.2) 0%, rgba(15, 106, 82, 0) 48%),
+        linear-gradient(180deg, #f9f4e4 0%, #f7f0db 100%);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 28px auto;
+      padding: 0 16px 36px;
+    }
+    .hero {
+      background:
+        radial-gradient(circle at top right, rgba(255,255,255,.2) 0%, rgba(255,255,255,0) 45%),
+        linear-gradient(130deg, #0f6a52, #0e5d49 45%, #1f7a63 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          45deg,
+          rgba(181, 138, 43, 0.12) 0px,
+          rgba(181, 138, 43, 0.12) 2px,
+          transparent 2px,
+          transparent 12px
+        );
+      pointer-events: none;
+    }
+    .hero h1 {
+      margin: 0 0 6px;
+      font-size: 34px;
+      position: relative;
+      z-index: 1;
+    }
+    .hero p {
+      margin: 0;
+      opacity: .95;
+      position: relative;
+      z-index: 1;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 2px 0 rgba(70, 83, 65, 0.04);
+      position: relative;
+    }
+    .card::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #0f6a52, #b58a2b);
+      border-top-left-radius: 14px;
+      border-top-right-radius: 14px;
+    }
+    h2 {
+      margin: 0 0 14px;
+      font-size: 48px;
+      line-height: 1.15;
+      color: #0f5b47;
+    }
+    .downloadTitle {
+      margin-top: 8px;
+      font-size: 52px;
+    }
+    ul {
+      margin: 0;
+      padding-left: 30px;
+      font-size: 38px;
+    }
+    .lead {
+      margin: 0;
+      font-size: 24px;
+      color: #102922;
+    }
+    .meta {
+      margin-top: 18px;
+      font-size: 22px;
+      color: var(--muted);
+    }
+    .meta p {
+      margin: 8px 0;
+    }
+    .btnRow {
+      margin-top: 24px;
+    }
+    .downloadBtn {
+      display: inline-block;
+      text-decoration: none;
+      border: 2px solid #0f6a52;
+      background: #f2e8cf;
+      color: #123228;
+      padding: 14px 26px;
+      border-radius: 10px;
+      font-size: 24px;
+      font-weight: 700;
+      transition: background .2s ease, transform .1s ease;
+    }
+    .downloadBtn:hover,
+    .downloadBtn:focus {
+      background: #eadcb8;
+      outline: none;
+    }
+    .downloadBtn:active {
+      transform: translateY(1px);
+    }
+    @media (max-width: 900px) {
+      h2, .downloadTitle { font-size: 34px; }
+      ul { font-size: 24px; }
+      .lead, .meta { font-size: 18px; }
+      .downloadBtn { font-size: 18px; width: 100%; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero" aria-label="Header">
+      <h1>Muslimku NVDA Add-on</h1>
+      <p>Version 7.1.1</p>
+    </section>
+
+    <main class="grid">
+      <section class="card" aria-labelledby="minreq">
+        <h2 id="minreq">Minimum Requirements</h2>
+        <ul>
+          <li>Windows 10, Windows 11, or newer</li>
+          <li>NVDA screen reader installed</li>
+          <li>Internet connection for online services</li>
+</ul>
+      </section>
+
+      <section class="card" aria-labelledby="downloadNow">
+        <h2 id="downloadNow" class="downloadTitle">Download Now</h2>
+        <p class="lead">Click the button below to start downloading the add-on package.</p>
+        <div class="meta">
+          <p><strong>Version:</strong> 7.1.1</p>
+          <p><strong>File:</strong> muslimku.nvda-addon</p>
+        </div>
+        <div class="btnRow">
+          <a class="downloadBtn" href="https://dwicito.com/downloads/Muslimku.nvda-addon" download>
+            Download muslimku.nvda-addon
+          </a>
+          <a class="downloadBtn" href="https://drive.google.com/uc?export=download&id=1vTlgEOnGvXsMCWDk2qoua4z-i0bncCwX" download style="margin-top:10px;">
+            Download via Google Drive
+          </a>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

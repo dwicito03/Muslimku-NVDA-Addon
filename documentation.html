@@ -1,0 +1,336 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Muslimku Documentation</title>
+  <style>
+    :root {
+      --bg: #f8f4e8;
+      --card: #fffdf7;
+      --text: #16352d;
+      --muted: #5a6f66;
+      --accent: #0f6a52;
+      --accent-2: #b58a2b;
+      --line: #e5dbc0;
+      --shadow: 0 10px 30px rgba(44, 58, 47, 0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans", "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(181, 138, 43, 0.16) 0%, rgba(181, 138, 43, 0) 45%),
+        radial-gradient(circle at 80% 0%, rgba(15, 106, 82, 0.2) 0%, rgba(15, 106, 82, 0) 48%),
+        linear-gradient(180deg, #f9f4e4 0%, #f7f0db 100%);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .wrap {
+      max-width: 1000px;
+      margin: 28px auto;
+      padding: 0 16px;
+    }
+    .hero {
+      background:
+        radial-gradient(circle at top right, rgba(255,255,255,.2) 0%, rgba(255,255,255,0) 45%),
+        linear-gradient(130deg, #0f6a52, #0e5d49 45%, #1f7a63 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 26px 24px;
+      box-shadow: var(--shadow);
+      animation: rise .35s ease-out;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          45deg,
+          rgba(181, 138, 43, 0.12) 0px,
+          rgba(181, 138, 43, 0.12) 2px,
+          transparent 2px,
+          transparent 12px
+        );
+      pointer-events: none;
+    }
+    .hero h1 { margin: 0 0 8px; font-size: 30px; }
+    .hero p { margin: 0; opacity: .95; }
+    .toolbar {
+      margin-top: 14px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    .toggle {
+      border: 1px solid rgba(255,255,255,.4);
+      background: rgba(255,255,255,.15);
+      color: #fff;
+      border-radius: 999px;
+      padding: 5px;
+      display: inline-flex;
+      gap: 4px;
+    }
+    .toggle button {
+      border: 0;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-weight: 600;
+      cursor: pointer;
+      background: transparent;
+      color: #fff;
+    }
+    .toggle button.active {
+      background: #f4ead1;
+      color: #27463d;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 2px 0 rgba(70, 83, 65, 0.04);
+      animation: rise .35s ease-out;
+      position: relative;
+    }
+    .card::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #0f6a52, #b58a2b);
+      border-top-left-radius: 14px;
+      border-top-right-radius: 14px;
+    }
+    h2 {
+      margin: 0 0 10px;
+      font-size: 20px;
+      color: #0f5b47;
+    }
+    ul, ol { margin: 0; padding-left: 20px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      padding: 8px 6px;
+      vertical-align: top;
+    }
+    th { color: #0f5b47; }
+    .muted { color: var(--muted); }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #f4ead1;
+      color: #7d5e16;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+    [data-lang] { display: none; }
+    [data-lang].show { display: block; }
+    @keyframes rise {
+      from { transform: translateY(6px); opacity: .85; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <span class="badge">Muslimku NVDA Add-on</span>
+      <div data-lang="en" class="show">
+        <h1>Documentation</h1>
+        <p>Version 7.1.1</p>
+      </div>
+      <div data-lang="id">
+        <h1>Dokumentasi</h1>
+        <p>Versi 7.1.1</p>
+      </div>
+      <div class="toolbar">
+        <div class="toggle" role="tablist" aria-label="Language switch">
+          <button id="btn-en" class="active" type="button">English</button>
+          <button id="btn-id" type="button">Indonesia</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <div data-lang="en" class="show">
+          <h2>Overview</h2>
+          <p>Muslimku is an NVDA add-on that provides prayer time announcements, Hijri/Gregorian date information, Qibla checking, and reminder notifications based on your selected location.</p>
+        </div>
+        <div data-lang="id">
+          <h2>Ringkasan</h2>
+          <p>Muslimku adalah add-on NVDA untuk pengumuman waktu salat, tanggal Hijriah/Masehi, pengecekan kiblat, dan notifikasi pengingat berdasarkan pengaturan lokasi.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div data-lang="en" class="show">
+          <h2>Features</h2>
+          <ul>
+            <li>Daily prayer announcements: Fajr, Dhuhr, Asr, Maghrib, and Isha.</li>
+            <li>Additional time announcements: Imsak, Sunrise, Dhuha, and Sunset.</li>
+            <li>Next-prayer announcement with remaining time.</li>
+            <li>Current location announcement.</li>
+            <li>Qibla direction check in degrees and compass direction.</li>
+            <li>Hijri/Gregorian date announcement with Maghrib-based Hijri transition.</li>
+            <li>Automatic reminders with configurable minute offset.</li>
+            <li>Speech-first reminders with optional Windows toast notifications.</li>
+            <li>Double-press gesture support to copy announcement text to clipboard.</li>
+            <li>All gestures can be remapped from NVDA Input Gestures.</li>
+            <li>Calculation method selection is available in settings, including Muhammadiyah.</li>
+            <li>Asr madhab selection is available (Shafi/Hanafi).</li>
+          </ul>
+        </div>
+        <div data-lang="id">
+          <h2>Fitur</h2>
+          <ul>
+            <li>Pengumuman salat wajib: Subuh, Dzuhur, Ashar, Maghrib, Isya.</li>
+            <li>Pengumuman waktu tambahan: Imsak, Terbit, Dhuha, dan Terbenam.</li>
+            <li>Pengumuman salat berikutnya beserta sisa waktu.</li>
+            <li>Pengumuman lokasi saat ini.</li>
+            <li>Pengecekan arah kiblat dalam derajat dan arah mata angin.</li>
+            <li>Pengumuman tanggal Hijriah/Masehi dengan perpindahan Hijriah berbasis Maghrib.</li>
+            <li>Pengingat otomatis dengan offset menit yang bisa diatur.</li>
+            <li>Pengingat berbasis suara NVDA dengan notifikasi toast Windows opsional.</li>
+            <li>Tekan gesture dua kali untuk menyalin teks hasil pengumuman.</li>
+            <li>Semua gesture dapat diubah dari Input Gestures NVDA.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="card">
+        <div data-lang="en" class="show">
+          <h2>Location Settings</h2>
+          <ul>
+            <li><strong>If the selected country is Indonesia</strong>, the add-on uses <code>Province</code> and <code>City/Regency</code> combo boxes.</li>
+            <li><strong>If the selected country is not Indonesia</strong>, the add-on uses a <code>City</code> combo box list based on that country.</li>
+            <li>Language can be set to Indonesian or English.</li>
+            <li>Calculation method can be selected from settings.</li>
+            <li>Asr madhab can be selected: Shafi or Hanafi.</li>
+            <li>Reminder settings include enable/disable and reminder offset (time range in minutes).</li>
+          </ul>
+        </div>
+        <div data-lang="id">
+          <h2>Pengaturan Lokasi</h2>
+          <ul>
+            <li><strong>Jika negara yang dipilih adalah  Indonesia</strong> maka memakai combo box <code>Provinsi</code> dan <code>Kota/Kabupaten</code>.</li>
+            <li><strong>Jika Negara yang dipilih Non Indonesia</strong> maka  memakai daftar combo box <code>Kota</code> sesuai negara terpilih.</li>
+            <li>Bahasa dapat dipilih  Indonesia atau English.</li>
+            <li>Pengaturan pengingat dapat aktif/nonaktif dan terdapat offset menit (rentang waktu) peringatan.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="card">
+        <div data-lang="en" class="show">
+          <h2>Default Shortcuts</h2>
+          <table>
+            <thead>
+              <tr><th>Shortcut</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>NVDA+Ctrl+Shift+1</code></td><td>Announce Fajr time</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+2</code></td><td>Announce Dhuhr time</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+3</code></td><td>Announce Asr time</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+4</code></td><td>Announce Maghrib time</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+5</code></td><td>Announce Isha time</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+6</code></td><td>Announce Imsak time</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+7</code></td><td>Announce Sunrise time</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+8</code></td><td>Announce Dhuha time</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+9</code></td><td>Announce Sunset time</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+H</code></td><td>Announce Hijri and Gregorian date</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+W</code></td><td>Announce next prayer</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+L</code></td><td>Announce current location</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+Q</code></td><td>Check Qibla direction</td></tr>
+            </tbody>
+          </table>
+          <p class="muted">All shortcuts are customizable in NVDA Input Gestures under the <code>Muslimku</code> category.</p>
+        </div>
+        <div data-lang="id">
+          <h2>Shortcut Default</h2>
+          <table>
+            <thead>
+              <tr><th>Shortcut</th><th>Aksi</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>NVDA+Ctrl+Shift+1</code></td><td>Umumkan waktu Subuh</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+2</code></td><td>Umumkan waktu Dzuhur</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+3</code></td><td>Umumkan waktu Ashar</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+4</code></td><td>Umumkan waktu Maghrib</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+5</code></td><td>Umumkan waktu Isya</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+6</code></td><td>Umumkan waktu Imsak</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+7</code></td><td>Umumkan waktu Terbit</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+8</code></td><td>Umumkan waktu Dhuha</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+9</code></td><td>Umumkan waktu Terbenam</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+H</code></td><td>Umumkan tanggal Hijriah dan Masehi</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+W</code></td><td>Umumkan salat berikutnya</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+L</code></td><td>Umumkan lokasi saat ini</td></tr>
+              <tr><td><code>NVDA+Ctrl+Shift+Q</code></td><td>Cek arah kiblat</td></tr>
+            </tbody>
+          </table>
+          <p class="muted">Semua shortcut bisa diubah di Input Gestures NVDA pada kategori <code>Muslimku</code>.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div data-lang="en" class="show">
+          <h2>Contact</h2>
+          <ul>
+            <li>Email: <a href="mailto:surel@dwicito.com">surel@dwicito.com</a></li>
+            <li>Website: <a href="https://dwicito.com" target="_blank" rel="noopener">dwicito.com</a></li>
+          </ul>
+        </div>
+        <div data-lang="id">
+          <h2>Kontak</h2>
+          <ul>
+            <li>Email: <a href="mailto:surel@dwicito.com">surel@dwicito.com</a></li>
+            <li>Website: <a href="https://dwicito.com" target="_blank" rel="noopener">dwicito.com</a></li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const btnEn = document.getElementById("btn-en");
+      const btnId = document.getElementById("btn-id");
+      const blocks = document.querySelectorAll("[data-lang]");
+
+      function setLang(lang) {
+        blocks.forEach(el => {
+          el.classList.toggle("show", el.getAttribute("data-lang") === lang);
+        });
+        btnEn.classList.toggle("active", lang === "en");
+        btnId.classList.toggle("active", lang === "id");
+        document.documentElement.lang = lang;
+      }
+
+      btnEn.addEventListener("click", () => setLang("en"));
+      btnId.addEventListener("click", () => setLang("id"));
+      setLang("en");
+    })();
+  </script>
+</body>
+</html>
+
