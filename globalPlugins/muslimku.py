@@ -1108,7 +1108,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
                 int(greg_day)
             )
 
-            base_date = datetime.datetime(2024, 1, 1)
+            base_date = datetime.datetime(2026, 5, 24)  # 24 Mei 2026 = Legi
             selisih = (date_obj - base_date).days
             pasaran_list = ["Legi", "Pahing", "Pon", "Wage", "Kliwon"]
             pasaran = pasaran_list[selisih % 5]
