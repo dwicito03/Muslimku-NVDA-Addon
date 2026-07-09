@@ -121,6 +121,16 @@
     .meta p {
       margin: 8px 0;
     }
+    .downloadCountLabel {
+      margin-bottom: 2px;
+    }
+    .downloadCountValue {
+      margin-top: 0;
+      font-size: 34px;
+      font-weight: 700;
+      color: #0f5b47;
+      line-height: 1.2;
+    }
     .btnRow {
       margin-top: 24px;
     }
@@ -156,7 +166,7 @@
   <div class="wrap">
     <section class="hero" aria-label="Header">
       <h1>Muslimku NVDA Add-on</h1>
-      <p>Version 7.1.1</p>
+      <p>Version 7.1.4</p>
     </section>
 
     <main class="grid">
@@ -173,8 +183,10 @@
         <h2 id="downloadNow" class="downloadTitle">Download Now</h2>
         <p class="lead">Click the button below to start downloading the add-on package.</p>
         <div class="meta">
-          <p><strong>Version:</strong> 7.1.1</p>
+          <p><strong>Version:</strong> 7.1.4</p>
           <p><strong>File:</strong> muslimku.nvda-addon</p>
+          <p class="downloadCountLabel"><strong>Total Downloads:</strong></p>
+          <p class="downloadCountValue"><span id="downloadCount" aria-live="polite">Loading...</span></p>
         </div>
         <div class="btnRow">
           <a class="downloadBtn" href="https://dwicito.com/downloads/Muslimku.nvda-addon" download>
@@ -187,5 +199,25 @@
       </section>
     </main>
   </div>
+  <script>
+    async function loadDownloadCount() {
+      const el = document.getElementById("downloadCount");
+      try {
+        const res = await fetch("https://api.github.com/repos/dwicito03/Muslimku-NVDA-Addon/releases");
+        if (!res.ok) throw new Error("Request failed");
+        const releases = await res.json();
+        let total = 0;
+        for (const rel of releases) {
+          for (const asset of (rel.assets || [])) {
+            total += Number(asset.download_count || 0);
+          }
+        }
+        el.textContent = total.toLocaleString("id-ID");
+      } catch (e) {
+        el.textContent = "N/A";
+      }
+    }
+    loadDownloadCount();
+  </script>
 </body>
 </html>

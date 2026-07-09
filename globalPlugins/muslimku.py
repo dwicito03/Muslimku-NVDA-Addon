@@ -1076,6 +1076,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             greg_month = greg["month"]["en"]
             greg_year = greg["year"]
             weekday_en = greg["weekday"]["en"]
+            weekday_name = "Ahad" if weekday_en == "Sunday" else weekday_en
 
             hari_map = {
                 "Monday": "Senin",
@@ -1084,7 +1085,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
                 "Thursday": "Kamis",
                 "Friday": "Jumat",
                 "Saturday": "Sabtu",
-                "Sunday": "Minggu"
+                "Sunday": "Ahad"
             }
 
             bulan_map = {
@@ -1137,13 +1138,13 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
                 # English message: append pasaran note only for Indonesia
                 if include_pasaran:
                     message = (
-                        f"{weekday_en}, "
+                        f"{weekday_name}, "
                         f"{hijri_day} {hijri['month']['en']} {hijri_year} AH/"
                         f"{greg_day} {greg_month} {greg_year} AD. Pasaran: {pasaran}"
                     )
                 else:
                     message = (
-                        f"{weekday_en}, "
+                        f"{weekday_name}, "
                         f"{hijri_day} {hijri['month']['en']} {hijri_year} AH/"
                         f"{greg_day} {greg_month} {greg_year} AD."
                     )
